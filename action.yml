@@ -1,0 +1,49 @@
+---
+
+# Install Nushell
+name: "install-nushell"
+description: "Forgejo Action to install Nushell in the environment or container."
+author: "David Randall (NiceGuyIT)"
+
+inputs:
+  set-default:
+    description: "Set Nushell as the default shell?"
+    required: false
+    default: "false"
+  nushell-version:
+    default: 'latest'
+    required: false
+    description: 'Nushell version to install.'
+  register-plugins:
+    default: 'false'
+    required: false
+    description: 'Register plugins after installation?'
+  create-config:
+    default: 'false'
+    required: false
+    description: 'Create the default config and env files?'
+
+outputs:
+  nushell-version:
+    description: "Nushell version installed"
+    value: ${{ steps.install-nushell.outputs.nushell-version }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Install Nushell
+      id: install-nushell
+      shell: bash
+      env:
+        # The working directory is with
+        # GITHUB_ACTION_PATH: ${{ github.action_path }}
+        SET_DEFAULT: ${{ inputs.set-default }}
+        NUSHELL_VERSION: ${{ inputs.nushell-version }}
+        REGISTER_PLUGINS: ${{ inputs.register-plugins }}
+      working-directory: ${{ github.action_path }}
+      run: |
+        #${GITHUB_ACTION_PATH}/install-nushell.sh
+        ./install-nushell.sh
+        nushell_version=$(nu --commands 'version | get version')
+        echo "nushell-version=${nushell_version}" >> ${GITHUB_OUTPUT}
