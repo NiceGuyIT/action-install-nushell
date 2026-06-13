@@ -20,6 +20,21 @@ REPO=nushell
 OWNER=nushell
 INSTALL_DIR=/usr/bin/
 
+# Elevate only when needed. Self-hosted Forgejo/Gitea containers usually run as
+# root, where INSTALL_DIR is writable and sudo is often not installed. GitHub
+# hosted runners run as a non-root user with passwordless sudo. Pick sudo only
+# in the second case so the same script works in both.
+if [ "$(id -u)" -eq 0 ]
+then
+	SUDO=""
+elif command -v sudo >/dev/null 2>&1
+then
+	SUDO="sudo"
+else
+	echo "Not running as root and sudo is not available; cannot install to ${INSTALL_DIR}" >&2
+	exit 1
+fi
+
 if [ "${INSTALL_NUSHELL_VERSION}" = "latest" ]
 then
 	# TODO: Check the rate limits: https://api.github.com/rate_limit
@@ -37,14 +52,14 @@ FILENAME="${BINARY}-${VERSION}-${arch}-unknown-${os}-musl.tar.gz"
 tmp_dir=$(mktemp --directory)
 url="https://${GH_HOST}/${OWNER}/${REPO}/releases/download/${VERSION}/${FILENAME}"
 curl --silent --location --output - "${url}" | tar --strip-components 1 --directory="${tmp_dir}" --extract --gzip --file -
-cp "${tmp_dir}"/nu* "${INSTALL_DIR}"
+${SUDO} cp "${tmp_dir}"/nu* "${INSTALL_DIR}"
 rm -r "${tmp_dir}"
 
 if [ "${INSTALL_SET_DEFAULT}" = "true" ]
 then
 	if [ -x "${INSTALL_DIR}nu" ]
 	then
-		chsh --shell ${INSTALL_DIR}nu "${USER}"
+		${SUDO} chsh --shell ${INSTALL_DIR}nu "${USER}"
 	fi
 fi
 
