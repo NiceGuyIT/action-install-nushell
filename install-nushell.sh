@@ -11,7 +11,6 @@ set -x
 INSTALL_SET_DEFAULT=$(echo "${SET_DEFAULT:=false}" | tr '[:upper:]' '[:lower:]')
 INSTALL_NUSHELL_VERSION=$(echo "${NUSHELL_VERSION:=latest}" | tr '[:upper:]' '[:lower:]')
 INSTALL_REGISTER_PLUGINS=$(echo "${REGISTER_PLUGINS:=false}" | tr '[:upper:]' '[:lower:]')
-INSTALL_CREATE_CONFIG=$(echo "${CREATE_CONFIG:=false}" | tr '[:upper:]' '[:lower:]')
 
 # Not needed but makes this script flexible.
 BINARY=nu
@@ -49,20 +48,9 @@ then
 	fi
 fi
 
-# Create the config directory so we don't have to check when creating the config or registering the plugins.
+# Create the config directory so we don't have to check when registering the plugins.
 # shellcheck disable=SC2016
 nu --commands 'mkdir ($nu.default-config-dir)'
-
-if [ "${INSTALL_CREATE_CONFIG}" = "true" ]
-then
-	if [ -x "${INSTALL_DIR}nu" ]
-	then
-		# shellcheck disable=SC2016
-		nu --commands '
-			config nu --default | save --raw --force ($nu.config-path);
-			config env --default | save --raw --force ($nu.env-path)'
-	fi
-fi
 
 if [ "${INSTALL_REGISTER_PLUGINS}" = "true" ]
 then
