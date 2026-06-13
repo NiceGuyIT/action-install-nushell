@@ -8,11 +8,13 @@
 #
 # The release recipe is adapted from `templates/justfile/release.just`. The
 # governance template reads the version from `Cargo.toml` and opens a PR that a
-# create-release workflow later tags. An action has no manifest and no build, so
-# the git tag IS the version and the release: the recipe computes the next
-# version from the existing tags and pushes an annotated tag directly. The
-# canonical source is on dev.a8n.run (Forgejo); the push mirror carries the tag
-# to the GitHub mirror, where you draft the Marketplace release from that tag.
+# post-merge create-release workflow later tags and releases. An action has no
+# manifest and no build, so the git tag IS the version: the recipe computes the
+# next version from the existing tags, pushes an annotated tag, then creates the
+# Forgejo Release on that tag directly (via `fj release create`) instead of
+# routing through a PR and workflow. The canonical source is on dev.a8n.run
+# (Forgejo); the push mirror carries the tag to the GitHub mirror, where
+# publishing to the Marketplace remains a manual step.
 
 # List available recipes.
 default:
@@ -71,14 +73,36 @@ create-release bump:
     git tag --annotate $tag --message $"Release ($tag)"
     git push origin $tag
 
+    # Create the Forgejo Release attached to the tag we just pushed. A pushed
+    # tag alone shows up under "tags" but not "releases"; this is what produces
+    # the Release entry (with changelog) the other repos get from their
+    # post-merge create-release workflow. The changelog spans the previous
+    # release tag to HEAD, or all commits on the first release. `--host
+    # dev.a8n.run` because more than one host lives in keys.json.
+    let prev_bare = $current | each { into string } | str join '.'
+    let prev_tag = $"v($prev_bare)"
+    let changelog = if ($versions | is-empty) {
+        ^git log --pretty="- %s" | str trim
+    } else {
+        ^git log --pretty="- %s" $"($prev_tag)..HEAD" | str trim
+    }
+    let body = $"## Changelog\n\n($changelog)"
+    let release = ^fj --host dev.a8n.run release create $tag --tag $tag --body $body | complete
+    if $release.exit_code != 0 {
+        print $"(ansi red)fj release create failed(ansi reset)"
+        print $release.stderr
+        exit 1
+    }
+
     # Move the floating major tag (vX) to this release so consumers can pin to
     # the major line, e.g. `uses: .../action-install-nushell@v0`. The tag is
     # reused across releases, so --force is required to repoint it and to push
-    # the moved ref.
+    # the moved ref. No separate Release is created for the floating tag.
     let major_tag = $"v($next.0)"
     git tag --annotate --force $major_tag --message $"Release ($tag)"
     git push --force origin $"refs/tags/($major_tag)"
 
-    print $"(ansi green)Tagged and pushed ($tag); moved floating ($major_tag) to it.(ansi reset)"
-    print "Next: on the GitHub mirror, draft a release from this tag and check"
-    print "\"Publish this Action to the GitHub Marketplace\"."
+    print $"(ansi green)Released ($tag) and moved floating ($major_tag) to it.(ansi reset)"
+    print "The Forgejo Release was created and the tag mirrors to GitHub."
+    print "Marketplace listing is still a manual step: on the GitHub mirror,"
+    print "edit the mirrored release and check \"Publish to the GitHub Marketplace\"."
