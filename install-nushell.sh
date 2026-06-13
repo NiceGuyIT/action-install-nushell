@@ -18,7 +18,11 @@ GH_HOST=github.com
 GH_API=api.github.com
 REPO=nushell
 OWNER=nushell
-INSTALL_DIR=/usr/bin/
+# Install to /usr/local/bin, which precedes /usr/bin on PATH. Some runners (the
+# openSUSE base) ship a preinstalled nu in /usr/local/bin; installing here
+# overrides it so the requested version is the one that resolves, rather than
+# being shadowed by the preinstalled copy in an earlier PATH entry.
+INSTALL_DIR=/usr/local/bin/
 
 # Elevate only when needed. Self-hosted Forgejo/Gitea containers usually run as
 # root, where INSTALL_DIR is writable and sudo is often not installed. GitHub
@@ -69,9 +73,10 @@ nu --commands 'mkdir ($nu.default-config-dir)'
 
 if [ "${INSTALL_REGISTER_PLUGINS}" = "true" ]
 then
+	# Pass INSTALL_DIR through the environment so nu can build the glob from it
+	# while $it / $nu stay literal inside the single-quoted command.
 	# shellcheck disable=SC2016
-	# TODO: ${INSTALL_DIR} will not be expanded. Should double quotes be used for expansion?
-	nu --commands 'glob /usr/bin/nu_plugin_*
+	INSTALL_DIR="${INSTALL_DIR}" nu --commands 'glob $"($env.INSTALL_DIR)nu_plugin_*"
     	| where $it !~ "example|custom_values|stress_internal"
     	| each {|it|
     		plugin add --plugin-config $nu.plugin-path $it;
