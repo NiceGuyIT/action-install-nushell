@@ -25,10 +25,6 @@ inputs:
     default: 'false'
     required: false
     description: 'Register plugins after installation?'
-  create-config:
-    default: 'false'
-    required: false
-    description: 'Create the default config and env files?'
 
 outputs:
   nushell-version:

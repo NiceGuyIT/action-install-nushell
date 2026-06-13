@@ -73,7 +73,6 @@ jobs:
   `root`).
 - `nushell-version`: Nushell version to install.
 - `register-plugins`: Register plugins after installation?
-- `create-config`: Create the default config and env files?
 
 ## Outputs
 

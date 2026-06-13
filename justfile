@@ -71,6 +71,14 @@ create-release bump:
     git tag --annotate $tag --message $"Release ($tag)"
     git push origin $tag
 
-    print $"(ansi green)Tagged and pushed ($tag).(ansi reset)"
+    # Move the floating major tag (vX) to this release so consumers can pin to
+    # the major line, e.g. `uses: .../action-install-nushell@v0`. The tag is
+    # reused across releases, so --force is required to repoint it and to push
+    # the moved ref.
+    let major_tag = $"v($next.0)"
+    git tag --annotate --force $major_tag --message $"Release ($tag)"
+    git push --force origin $"refs/tags/($major_tag)"
+
+    print $"(ansi green)Tagged and pushed ($tag); moved floating ($major_tag) to it.(ansi reset)"
     print "Next: on the GitHub mirror, draft a release from this tag and check"
     print "\"Publish this Action to the GitHub Marketplace\"."

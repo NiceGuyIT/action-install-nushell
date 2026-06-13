@@ -1,0 +1,44 @@
+---
+# Exercise the action against several Nushell versions and assert that the
+# installed binary matches both the requested version and the action's output.
+# Runs on Forgejo; the GitHub mirror can run the same file if Actions is enabled
+# there.
+name: Test
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+jobs:
+  install-nushell:
+    name: Install Nushell ${{ matrix.nushell-version }}
+    # This label is provided by the Forgejo Runner (see README example).
+    runs-on: ubuntu-act-22.04
+    strategy:
+      # Run every version even if one fails, so a single bad version does not
+      # mask the others.
+      fail-fast: false
+      matrix:
+        nushell-version:
+          - '0.100.0'
+          - '0.101.0'
+          - 'latest'
+    steps:
+      -
+        name: Checkout code
+        uses: https://code.forgejo.org/actions/checkout@v4
+
+      -
+        name: Install Nushell
+        id: nushell
+        # Use the action from this checkout rather than a published ref.
+        uses: ./
+        with:
+          nushell-version: ${{ matrix.nushell-version }}
+
+      -
+        name: Assert installed version
+        shell: bash
+        run: nu tests/assert-version.nu '${{ matrix.nushell-version }}' '${{ steps.nushell.outputs.nushell-version }}'
