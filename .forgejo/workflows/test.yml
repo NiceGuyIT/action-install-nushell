@@ -14,8 +14,9 @@ on:
 jobs:
   install-nushell:
     name: Install Nushell ${{ matrix.nushell-version }}
-    # This label is provided by the Forgejo Runner (see README example).
-    runs-on: ubuntu-act-22.04
+    # Standard runner across the a8n-run repos. The ubuntu-act-* images grow
+    # large with little cleanup, so match the sibling repos' openSUSE base.
+    runs-on: ${{ vars.RUNS_ON_OPENSUSE_BASE_LATEST }}
     strategy:
       # Run every version even if one fails, so a single bad version does not
       # mask the others.
@@ -28,7 +29,7 @@ jobs:
     steps:
       -
         name: Checkout code
-        uses: https://code.forgejo.org/actions/checkout@v4
+        uses: https://code.forgejo.org/actions/checkout@v5
 
       -
         name: Install Nushell
