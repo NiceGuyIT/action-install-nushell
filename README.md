@@ -1,8 +1,8 @@
 # Action to Install Nushell
 
 This is a Forgejo/Gitea/GitHub action to install Nushell into the current environment or container. The goal is to
-create a lightweight installer that works outside GitHub (i.e. in a self-hosted environment). The code is hosted on
-[Codeberg][7] with eventual plans to mirror it on Gitea and GitHub.
+create a lightweight installer that works outside GitHub (i.e. in a self-hosted environment). The source lives on
+[dev.a8n.run][7] and is mirrored to [Codeberg][8] and [GitHub][9].
 
 Note: This hasn't been tested much so you may run into problems. Pull requests are welcome!
 
@@ -49,7 +49,7 @@ jobs:
         name: Install Nushell
         id: nushell
         # Nothing has been tagged yet. Use main.
-        uses: https://codeberg.org/NiceGuyIT/action-install-nushell@main
+        uses: https://dev.a8n.run/pandoras-box/action-install-nushell@main
         with:
           nushell-version: '0.101.0'
           register-plugins: true
@@ -85,4 +85,6 @@ jobs:
 [4]: https://github.com/marketplace/actions/setup_nu
 [5]: https://github.com/hustcer/setup-nu/blob/e58310efdaea25b269e19437ab7b3103eda690dc/src/setup.ts#L216
 [6]: https://github.com/pelasgus/setup_nu/blob/main/src/main.rs
-[7]: https://codeberg.org/NiceGuyIT/action-install-nushell
+[7]: https://dev.a8n.run/pandoras-box/action-install-nushell
+[8]: https://codeberg.org/NiceGuyIT/action-install-nushell
+[9]: https://github.com/NiceGuyIT/action-install-nushell
