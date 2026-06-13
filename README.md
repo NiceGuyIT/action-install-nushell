@@ -49,7 +49,7 @@ jobs:
         name: Install Nushell
         id: nushell
         # Nothing has been tagged yet. Use main.
-        uses: https://codeberg.org/NiceGuyIT/action-install-nushell@main
+        uses: https://dev.a8n.run/pandoras-box/action-install-nushell@main
         with:
           nushell-version: '0.101.0'
           register-plugins: true
