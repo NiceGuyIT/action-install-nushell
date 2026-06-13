@@ -5,6 +5,13 @@ name: "install-nushell"
 description: "Forgejo Action to install Nushell in the environment or container."
 author: "David Randall (NiceGuyIT)"
 
+# Required for publishing to the GitHub Marketplace. icon is a feather icon
+# name; color is one of white, yellow, blue, green, orange, red, purple,
+# gray-dark.
+branding:
+  icon: "terminal"
+  color: "green"
+
 inputs:
   set-default:
     description: "Set Nushell as the default shell?"
@@ -25,7 +32,7 @@ inputs:
 
 outputs:
   nushell-version:
-    description: "Nushell version that wsa installed"
+    description: "Nushell version that was installed"
     value: ${{ steps.install-nushell.outputs.nushell-version }}
 
 runs:
