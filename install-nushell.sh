@@ -39,8 +39,35 @@ else
 	exit 1
 fi
 
+# jq is only needed to resolve the "latest" version from the GitHub API. Some
+# images (e.g. the openSUSE base) do not ship it, so install it on demand via
+# whichever package manager is present. This is a no-op when jq already exists.
+ensure_jq() {
+	if command -v jq >/dev/null 2>&1
+	then
+		return 0
+	fi
+	if command -v zypper >/dev/null 2>&1
+	then
+		${SUDO} zypper --non-interactive install jq
+	elif command -v apt-get >/dev/null 2>&1
+	then
+		${SUDO} apt-get update && ${SUDO} apt-get install --yes jq
+	elif command -v apk >/dev/null 2>&1
+	then
+		${SUDO} apk add --no-cache jq
+	elif command -v dnf >/dev/null 2>&1
+	then
+		${SUDO} dnf install --assumeyes jq
+	else
+		echo "jq is required to resolve the latest version but no supported package manager (zypper, apt-get, apk, dnf) was found" >&2
+		exit 1
+	fi
+}
+
 if [ "${INSTALL_NUSHELL_VERSION}" = "latest" ]
 then
+	ensure_jq
 	# TODO: Check the rate limits: https://api.github.com/rate_limit
 	version_url="https://${GH_API}/repos/${OWNER}/${REPO}/releases/latest"
 	VERSION=$(curl --silent --location --output - "${version_url}" | jq -r '.name')
