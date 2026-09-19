@@ -14,9 +14,8 @@ on:
 jobs:
   install-nushell:
     name: Install Nushell ${{ matrix.nushell-version }}
-    # Standard runner across the a8n-run repos. The ubuntu-act-* images grow
-    # large with little cleanup, so match the sibling repos' openSUSE base.
-    runs-on: ${{ vars.RUNS_ON_OPENSUSE_BASE_LATEST }}
+    # Medium: downloads Nushell and runs one assertion, no compile (DEV-769).
+    runs-on: ${{ vars.RUNS_ON_OPENSUSE_BASE_MEDIUM }}
     strategy:
       # Run every version even if one fails, so a single bad version does not
       # mask the others.
